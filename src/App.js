@@ -19,12 +19,6 @@ const reducer = (state, action) => {
         todos: [payload.todo, ...state.todos],
       };
     }
-    // case "ADD_IMAGES": {
-    //   return {
-    //     albums: state.albums,
-    //     images: [state.images],
-    //   };
-    // }
     case "UPDATE_TODO": {
       const todoDuplicate = state.todos;
       todoDuplicate[payload.todoPos] = payload.todo;
@@ -32,12 +26,11 @@ const reducer = (state, action) => {
         todos: todoDuplicate,
       };
     }
-    // case "REMOVE_IMAGE": {
-    //   return {
-    //     albums: state.albums,
-    //     images: state.images.filter((image) => image.id !== payload.id),
-    //   };
-    // }
+    case "REMOVE_TODO": {
+      return {
+        todos: state.todos.filter((todo) => todo.id !== payload.id),
+      };
+    }
     default:
       return state;
   }
@@ -129,6 +122,26 @@ function App() {
     setLoading(false);
   };
 
+  const deleteTodo = async (id) => {
+    setLoading(true);
+    // await deleteDoc(doc(db, `Albums/${albumIDToShow}/Images`, id));
+
+    try {
+      const response = await fetch(
+        "https://jsonplaceholder.typicode.com/posts/1",
+        {
+          method: "DELETE",
+        }
+      );
+      const data = await response.json();
+      dispatch({ type: "REMOVE_TODO", payload: { id } });
+      toast.success("Todo deleted successfully.");
+    } catch (error) {
+      toast.error("Error on deleting todo");
+    }
+    setLoading(false);
+  };
+
   // console.log(state);
 
   useEffect(() => {
@@ -145,6 +158,7 @@ function App() {
           todos={state.todos}
           addTodo={addTodo}
           updateTodo={updateTodo}
+          deleteTodo={deleteTodo}
         />
       </div>
     </>
