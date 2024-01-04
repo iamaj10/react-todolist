@@ -2,6 +2,9 @@ import { useEffect, useReducer, useState } from "react";
 import "./App.css";
 import TodoList from "./components/TodoList";
 import { toast, ToastContainer } from "react-toastify";
+import Lottie from "react-lottie-player";
+
+import loadingAnimation from "./assets/json/loadingAnimation.json";
 
 import "react-toastify/dist/ReactToastify.css";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -161,7 +164,17 @@ function App() {
       <div className="App">
         <h2>Todo List</h2>
         {loading ? (
-          <p>Loading...</p>
+          <div
+            className="d-flex justify-content-center align-items-center"
+            style={{ textAlign: "center", height: "100vh" }}
+          >
+            <Lottie
+              loop
+              animationData={loadingAnimation}
+              play
+              style={{ width: 500, height: 500 }}
+            />
+          </div>
         ) : (
           <TodoList
             todos={state.todos}
