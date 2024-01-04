@@ -6,6 +6,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 
+// Reducer
 const reducer = (state, action) => {
   const { payload } = action;
   switch (action.type) {
@@ -42,6 +43,7 @@ function App() {
 
   const [idCounter, setIdCounter] = useState(100);
 
+  // Gets todos from an API
   const getTodos = async () => {
     setLoading(true);
 
@@ -60,6 +62,7 @@ function App() {
     setLoading(false);
   };
 
+  // Adds todos from an API
   const addTodo = async (todo) => {
     if (!todo.title) return;
     setLoading(true);
@@ -91,6 +94,7 @@ function App() {
     setLoading(false);
   };
 
+  // Updates todos from an API
   const updateTodo = async (todo) => {
     setLoading(true);
     const todoPos = state.todos.findIndex((t) => t.id === todo.id);
@@ -122,6 +126,7 @@ function App() {
     setLoading(false);
   };
 
+  // Deletes todos from an API
   const deleteTodo = async (id) => {
     setLoading(true);
     // await deleteDoc(doc(db, `Albums/${albumIDToShow}/Images`, id));
@@ -144,6 +149,7 @@ function App() {
 
   // console.log(state);
 
+  // Retrieves todos from an API on first render
   useEffect(() => {
     getTodos();
   }, []);
@@ -154,12 +160,16 @@ function App() {
       <ToastContainer />
       <div className="App">
         <h2>Todo List</h2>
-        <TodoList
-          todos={state.todos}
-          addTodo={addTodo}
-          updateTodo={updateTodo}
-          deleteTodo={deleteTodo}
-        />
+        {loading ? (
+          <p>Loading...</p>
+        ) : (
+          <TodoList
+            todos={state.todos}
+            addTodo={addTodo}
+            updateTodo={updateTodo}
+            deleteTodo={deleteTodo}
+          />
+        )}
       </div>
     </>
   );
