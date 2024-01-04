@@ -1,7 +1,9 @@
 import { useEffect, useReducer, useState } from "react";
 import "./App.css";
 import TodoList from "./components/TodoList";
+import { toast, ToastContainer } from "react-toastify";
 
+import "react-toastify/dist/ReactToastify.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const reducer = (state, action) => {
@@ -12,31 +14,24 @@ const reducer = (state, action) => {
         todos: payload.todos,
       };
     }
-    // case "GET_IMAGES": {
-    //   return {
-    //     albums: state.albums,
-    //     images: payload.images,
-    //   };
-    // }
-    // case "ADD_ALBUM": {
-    //   return {
-    //     albums: [state.albums],
-    //   };
-    // }
+    case "ADD_TODO": {
+      return {
+        todos: [payload.todo, ...state.todos],
+      };
+    }
     // case "ADD_IMAGES": {
     //   return {
     //     albums: state.albums,
     //     images: [state.images],
     //   };
     // }
-    // case "UPDATE_IMAGE": {
-    //   const imagesDuplicate = state.images;
-    //   imagesDuplicate[payload.ImagePos] = payload.image;
-    //   return {
-    //     albums: state.albums,
-    //     images: imagesDuplicate,
-    //   };
-    // }
+    case "UPDATE_TODO": {
+      const todoDuplicate = state.todos;
+      todoDuplicate[payload.todoPos] = payload.todo;
+      return {
+        todos: todoDuplicate,
+      };
+    }
     // case "REMOVE_IMAGE": {
     //   return {
     //     albums: state.albums,
@@ -52,6 +47,8 @@ function App() {
   const [state, dispatch] = useReducer(reducer, { todos: [] });
   const [loading, setLoading] = useState(false);
 
+  const [idCounter, setIdCounter] = useState(100);
+
   const getTodos = async () => {
     setLoading(true);
 
@@ -62,24 +59,95 @@ function App() {
       const todos = await response.json();
 
       dispatch({ type: "GET_TODOS", payload: { todos } });
+      toast.success("Todos retrived successfully.");
     } catch (error) {
-      console.error("Error fetching todos:", error);
+      toast.error("Error on retriving todos.");
     }
 
     setLoading(false);
   };
 
-  console.log(state);
+  const addTodo = async (todo) => {
+    if (!todo.title) return;
+    setLoading(true);
+    try {
+      const response = await fetch(
+        "https://jsonplaceholder.typicode.com/posts",
+        {
+          method: "POST",
+          body: JSON.stringify({ ...todo }),
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          },
+        }
+      );
+      const data = await response.json();
+
+      data.id = data.id + idCounter;
+      setIdCounter(idCounter + 1);
+
+      dispatch({
+        type: "ADD_TODO",
+        payload: { todo: { ...data } },
+      });
+      toast.success("Todo added successfully.");
+    } catch (error) {
+      toast.error("Error on adding todo");
+    }
+
+    setLoading(false);
+  };
+
+  const updateTodo = async (todo) => {
+    setLoading(true);
+    const todoPos = state.todos.findIndex((t) => t.id === todo.id);
+
+    if (todoPos === -1) {
+      return false;
+    }
+
+    try {
+      const response = await fetch(
+        // `https://jsonplaceholder.typicode.com/posts/${todo.id}`,
+        `https://jsonplaceholder.typicode.com/posts/1`,
+
+        {
+          method: "PUT",
+          body: JSON.stringify(todo),
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          },
+        }
+      );
+      const data = await response.json();
+      dispatch({ type: "UPDATE_TODO", payload: { todoPos, todo } });
+      toast.success("Todo updated successfully.");
+    } catch (error) {
+      toast.error("Error on updating todo");
+    }
+
+    setLoading(false);
+  };
+
+  // console.log(state);
 
   useEffect(() => {
     getTodos();
   }, []);
 
   return (
-    <div className="App">
-      <h2>Todo List</h2>
-      <TodoList todos={state.todos} />
-    </div>
+    <>
+      {" "}
+      <ToastContainer />
+      <div className="App">
+        <h2>Todo List</h2>
+        <TodoList
+          todos={state.todos}
+          addTodo={addTodo}
+          updateTodo={updateTodo}
+        />
+      </div>
+    </>
   );
 }
 
